@@ -17,13 +17,21 @@ idDataGroupSTSK = [
     915221350,  #Anh Thuận
     6472715042, #Tuấn lỏ
 ]
+
 idDataGroupSTSKB2B = [
     6343138254, #Dev. Huỳnh Thông
     622900588,  #Anh Phong
     278142933, #Chị Giang
 ]
 
-IDGroupKietLac = "-4547843665"
+idDataGroupNewProjectB2B = [
+    6343138254, #Dev. Huỳnh Thông
+    622900588,  #Anh Phong
+    1334692945, #Thi
+]
+
+IDGroupNewGroupB2B = "-4775629953"
+IDGroupKietLac = "-1002403939929"
 IDGroupSTSK = "-4598566938"
 IDGroupSTSKB2B = "-4542368071"
 
@@ -36,6 +44,7 @@ async def getInfo(update: Update, context: CallbackContext):
                                               f"Name: {name}", parse_mode=ParseMode.MARKDOWN)
 
 async def handleGroupMessage(update: Update, context: CallbackContext):
+    print("Bắt đầu tag all")
     myID = update.effective_user.id
     group = []
     content = ""
@@ -45,6 +54,8 @@ async def handleGroupMessage(update: Update, context: CallbackContext):
         group = idDataGroupKietLac
     if str(update.effective_chat.id) == IDGroupSTSKB2B:
         group = idDataGroupSTSKB2B
+    if str(update.effective_chat.id) == IDGroupNewGroupB2B:
+        group = idDataGroupNewProjectB2B
     i = 0
     for member_id in group:
         try:
