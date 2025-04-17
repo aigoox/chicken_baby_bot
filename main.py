@@ -86,5 +86,4 @@ app.add_handler(CommandHandler("get_info", getInfo))
 # Use long polling instead of webhook
 print("===============Khởi động Bot Thành công===============")
 # Bắt đầu bot
-port = int(os.getenv("PORT", 5000))
-app.run_webhook(host="0.0.0.0", port=port)
+app.run_polling()
