@@ -86,13 +86,5 @@ app.add_handler(CommandHandler("get_info", getInfo))
 # Use long polling instead of webhook
 print("===============Khởi động Bot Thành công===============")
 # Bắt đầu bot
-app.run_polling()
-flask_app = Flask(__name__)
-
-@flask_app.route('/')
-def home():
-    return "Bot is running..."
-
-if __name__ == "__main__":
-    port = int(os.getenv("PORT", 5000))
-    flask_app.run(host="0.0.0.0", port=port)
+port = int(os.getenv("PORT", 5000))
+app.run_webhook(host="0.0.0.0", port=port)
