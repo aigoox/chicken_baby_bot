@@ -1,7 +1,10 @@
+import os
+
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.error import BadRequest, Forbidden
 from telegram.ext import Application, CommandHandler, CallbackContext
+from flask import Flask
 
 TOKEN = "8118725511:AAFZUcyx8l1nEGQh9wxE-JnKx21zHE9u_ls"
 
@@ -83,5 +86,12 @@ app.add_handler(CommandHandler("get_info", getInfo))
 # Use long polling instead of webhook
 print("===============Khởi động Bot Thành công===============")
 
-# Start polling for updates
-app.run_polling()
+flask_app = Flask(__name__)
+
+@flask_app.route('/')
+def home():
+    return "Bot is running..."
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 5000))  # Render cung cấp cổng qua biến môi trường PORT
+    flask_app.run(host="0.0.0.0", port=port)
