@@ -1,10 +1,11 @@
-import os
+import socketserver
+import threading
 
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.error import BadRequest, Forbidden
 from telegram.ext import Application, CommandHandler, CallbackContext
-from flask import Flask
+from werkzeug import http
 
 TOKEN = "8118725511:AAFZUcyx8l1nEGQh9wxE-JnKx21zHE9u_ls"
 
@@ -86,4 +87,31 @@ app.add_handler(CommandHandler("get_info", getInfo))
 # Use long polling instead of webhook
 print("===============Khởi động Bot Thành công===============")
 # Bắt đầu bot
-app.run_polling()
+
+def initialize_bot_telegram():
+    print("===============initialize_bot_telegram===============")
+    app.run_polling()
+
+def run_server_fake():
+    # Define the port to run the server on
+    PORT = 8000
+
+    # Set up the server to serve files from the current directory
+    Handler = http.server.SimpleHTTPRequestHandler
+
+    # Create the server
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+        print(f"Serving at http://localhost:{PORT}")
+        # Start the server and keep it running until interrupted
+        httpd.serve_forever()
+
+
+if __name__ == 'main':
+    bot_threading = threading.Thread(target=initialize_bot_telegram)
+    run_server_threading = threading.Thread(target=run_server_fake)
+
+    bot_threading.start()
+    run_server_threading.start()
+
+    bot_threading.join()
+    run_server_threading.join()
