@@ -1,11 +1,10 @@
-import socketserver
-import threading
+import asyncio
 
+import nest_asyncio
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.error import BadRequest, Forbidden
 from telegram.ext import Application, CommandHandler, CallbackContext
-from werkzeug import http
 
 TOKEN = "8118725511:AAFZUcyx8l1nEGQh9wxE-JnKx21zHE9u_ls"
 
@@ -88,30 +87,83 @@ app.add_handler(CommandHandler("get_info", getInfo))
 print("===============Khởi động Bot Thành công===============")
 # Bắt đầu bot
 
-def initialize_bot_telegram():
-    print("===============initialize_bot_telegram===============")
-    app.run_polling()
-
-def run_server_fake():
-    # Define the port to run the server on
-    PORT = 8000
-
-    # Set up the server to serve files from the current directory
-    Handler = http.server.SimpleHTTPRequestHandler
-
-    # Create the server
-    with socketserver.TCPServer(("", PORT), Handler) as httpd:
-        print(f"Serving at http://localhost:{PORT}")
-        # Start the server and keep it running until interrupted
-        httpd.serve_forever()
+from flask import Flask
+import threading
+from werkzeug.serving import make_server
 
 
-if __name__ == 'main':
-    bot_threading = threading.Thread(target=initialize_bot_telegram)
-    run_server_threading = threading.Thread(target=run_server_fake)
+class FlaskServerThread(threading.Thread):
+    def __init__(self, host='localhost', port=5000):
+        threading.Thread.__init__(self)
+        self.host = host
+        self.port = port
+        self.app = Flask(__name__)
 
-    bot_threading.start()
-    run_server_threading.start()
+        # Define routes
+        @self.app.route('/')
+        def home():
+            return 'Flask Server Running in Background Thread!'
 
-    bot_threading.join()
-    run_server_threading.join()
+        self.server = make_server(self.host, self.port, self.app)
+        self.ctx = self.app.app_context()
+        self.ctx.push()
+
+    def run(self):
+        print(f'Starting Flask server on http://{self.host}:{self.port}')
+        self.server.serve_forever()
+
+    def shutdown(self):
+        self.server.shutdown()
+
+
+class TelegramBotThread(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.bot = None
+        self.loop = None
+
+    def run(self):
+        print('Starting Telegram Bot...')
+        nest_asyncio.apply()
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_until_complete(self.start_bot())
+
+    async def start_bot(self):
+        await app.initialize()
+        await app.run_polling()
+        # while True:
+        #     await asyncio.sleep(1)
+        #     print('start calling bot')
+
+    def shutdown(self):
+        print('Stopping Telegram Bot...')
+        if self.loop:
+            self.loop.call_soon_threadsafe(self.loop.stop)
+            self.loop.close()
+
+
+def main():
+    # Create and start the Flask server thread
+    flask_thread = FlaskServerThread()
+    flask_thread.start()
+
+    telegram_thread = TelegramBotThread()
+    telegram_thread.start()
+    try:
+        print("Both Flask server and Telegram bot are running...")
+        print("Press Ctrl+C to stop both services")
+        while True:
+            # Do other work here if needed
+            pass
+
+    except KeyboardInterrupt:
+        print("\nShutting down services...")
+        flask_thread.shutdown()
+        telegram_thread.shutdown()
+        flask_thread.join()
+        telegram_thread.join()
+        print("All services stopped")
+
+if __name__ == "__main__":
+    main()

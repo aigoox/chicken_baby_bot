@@ -1,3 +1,4 @@
 python-telegram-bot
 Flask==2.1.1
 werkzeug==2.1.0
+nest-asyncio==1.6.0
